@@ -32,10 +32,10 @@ export interface Chat {
 
 // Initialize dummy faculty data
 const dummyFaculty: Faculty[] = [
-  { id: 1, name: "Prof. A. Patil", dept: "IT" },
-  { id: 2, name: "Dr. S. More", dept: "IT" },
-  { id: 3, name: "Prof. R. Kulkarni", dept: "CS" },
-  { id: 4, name: "Dr. M. Deshmukh", dept: "CS" },
+  { id: 1, name: "Prof. Shital Ghule", dept: "IT" },
+  { id: 2, name: "Dr. Jyoti Surve", dept: "IT" },
+  { id: 3, name: "Prof. Kimi Ramteke", dept: "CS" },
+  { id: 4, name: "Dr. Shital Wadgavane", dept: "CS" },
   { id: 5, name: "Prof. V. Jadhav", dept: "ENTC" },
   { id: 6, name: "Dr. N. Shinde", dept: "ENTC" },
 ];
