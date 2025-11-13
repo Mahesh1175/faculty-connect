@@ -19,6 +19,10 @@ const App = () => {
     initializeData();
   }, []);
 
+  const handleAIAssistanceClick = () => {
+    window.open("https://finalyear-tdkewnwegsydeywyvtthds.streamlit.app/", "_blank");
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -34,6 +38,30 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        
+        {/* AI Assistance Floating Button */}
+        <button
+          onClick={handleAIAssistanceClick}
+          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-50 flex items-center gap-2"
+          title="AI Assistance"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="m2 17 10 5 10-5" />
+            <path d="m2 12 10 5 10-5" />
+          </svg>
+          <span className="hidden sm:inline font-medium">AI Assistant</span>
+        </button>
       </TooltipProvider>
     </QueryClientProvider>
   );
