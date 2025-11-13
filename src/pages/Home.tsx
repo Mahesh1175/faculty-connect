@@ -16,9 +16,9 @@ const Home = () => {
       <section className="relative bg-gradient-to-br from-primary via-primary-light to-primary-dark text-primary-foreground py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <img src={logo} alt="iSquareIT Logo" className="h-24 mx-auto mb-6" />
+            <img src={logo} alt="ISquareIT Logo" className="h-24 mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              Welcome to iSquareIT
+              Welcome to ISquareIT
               <br />
               Faculty Visit Portal
             </h1>
