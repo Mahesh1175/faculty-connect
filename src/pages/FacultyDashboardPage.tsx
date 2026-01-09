@@ -12,15 +12,11 @@ import toast from "react-hot-toast";
 import { Users, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 // Main Dashboard Component (your existing component)
-const FacultyDashboard = () => {
-  const [selectedFaculty, setSelectedFaculty] = useState("");
+const FacultyDashboard = ({ selectedFaculty }: { selectedFaculty: string }) => {
   const [requests, setRequests] = useState<VisitorRequest[]>([]);
-  const facultyList = getFaculty();
 
   useEffect(() => {
-    if (selectedFaculty) {
-      loadRequests();
-    }
+    loadRequests();
   }, [selectedFaculty]);
 
   const loadRequests = () => {
@@ -51,34 +47,16 @@ const FacultyDashboard = () => {
       <div className="container mx-auto px-4 py-8">
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Faculty Dashboard</CardTitle>
+            <CardTitle className="text-3xl">Faculty Dashboard</CardTitle>
             <CardDescription>
-              Manage visitor requests and communicate with visitors
+              Welcome {selectedFaculty}!
+               Manage visitor requests and communicate with visitors
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="max-w-md">
-              <label className="text-sm font-medium mb-2 block">Select Faculty Profile</label>
-              <Select value={selectedFaculty} onValueChange={setSelectedFaculty}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose your faculty profile" />
-                </SelectTrigger>
-                <SelectContent>
-                  {facultyList.map((faculty) => (
-                    <SelectItem key={faculty.id} value={faculty.name}>
-                      {faculty.name} ({faculty.dept})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
         </Card>
 
-        {selectedFaculty && (
-          <>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
@@ -199,8 +177,6 @@ const FacultyDashboard = () => {
                 )}
               </TabsContent>
             </Tabs>
-          </>
-        )}
       </div>
     </div>
   );
@@ -208,6 +184,7 @@ const FacultyDashboard = () => {
 
 // Authentication Wrapper Component
 const FacultyDashboardPage = () => {
+  const [selectedFaculty, setSelectedFaculty] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [step, setStep] = useState(1); // 1: name, 2: phone, 3: otp
   const [formData, setFormData] = useState({
@@ -215,6 +192,13 @@ const FacultyDashboardPage = () => {
     phone: "",
     otp: ""
   });
+  const facultyList = getFaculty();
+
+  const handleFacultySelect = (faculty: string) => {
+    setSelectedFaculty(faculty);
+    setFormData(prev => ({ ...prev, name: faculty }));
+    setStep(2); // Go to phone number step
+  };
 
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,18 +233,40 @@ const FacultyDashboardPage = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  if (isAuthenticated) {
-    return <FacultyDashboard />;
+  if (isAuthenticated && selectedFaculty) {
+    return <FacultyDashboard selectedFaculty={selectedFaculty} />;
   }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Faculty Authentication</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            {!selectedFaculty ? "Faculty Selection" : "Faculty Authentication"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {step === 1 && (
+          {!selectedFaculty && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="faculty-select">Select Faculty Profile</Label>
+                <Select value={selectedFaculty} onValueChange={handleFacultySelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose your faculty profile" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {facultyList.map((faculty) => (
+                      <SelectItem key={faculty.id} value={faculty.name}>
+                        {faculty.name} ({faculty.dept})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {selectedFaculty && step === 1 && (
             <form onSubmit={handleNameSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name">Faculty Name</Label>
@@ -273,15 +279,32 @@ const FacultyDashboardPage = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
-                Continue
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedFaculty("");
+                    setStep(1);
+                    setFormData({ name: "", phone: "", otp: "" });
+                  }}
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+                <Button type="submit" className="flex-1">
+                  Continue
+                </Button>
+              </div>
             </form>
           )}
 
-          {step === 2 && (
+          {selectedFaculty && step === 2 && (
             <form onSubmit={handlePhoneSubmit} className="space-y-4">
               <div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Authenticating: <strong>{selectedFaculty}</strong>
+                </p>
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
@@ -299,7 +322,11 @@ const FacultyDashboardPage = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                    setSelectedFaculty("");
+                    setStep(1);
+                    setFormData({ name: "", phone: "", otp: "" });
+                  }}
                   className="flex-1"
                 >
                   Back
@@ -311,9 +338,12 @@ const FacultyDashboardPage = () => {
             </form>
           )}
 
-          {step === 3 && (
+          {selectedFaculty && step === 3 && (
             <form onSubmit={handleOTPSubmit} className="space-y-4">
               <div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Authenticating: <strong>{selectedFaculty}</strong>
+                </p>
                 <Label htmlFor="otp">Enter OTP</Label>
                 <Input
                   id="otp"

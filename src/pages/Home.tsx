@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
-import { Calendar, MessageSquare, Users, ArrowRight } from "lucide-react";
+import { Calendar, MessageSquare, Users, ArrowRight, ExternalLink } from "lucide-react";
 import logo from "@/assets/isquareit-logo.png";
 
 const Home = () => {
@@ -25,6 +25,27 @@ const Home = () => {
             <p className="text-xl text-primary-foreground/90 max-w-2xl mx-auto">
               Seamlessly connect with faculty members. Request visits, get approvals, and chat in real-time.
             </p>
+            
+            {/* College Website Link */}
+            <div className="flex justify-center pt-6 pb-2">
+              <Button
+                variant="outline"
+                size="lg"
+                asChild
+                className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 font-medium"
+              >
+                <a 
+                  href="https://www.isquareit.edu.in/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  Visit Our Official Website
+                  <ExternalLink className="h-5 w-5" />
+                </a>
+              </Button>
+            </div>
+            
             <div className="flex gap-4 justify-center pt-4">
               <Button
                 size="lg"
@@ -120,7 +141,25 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="bg-card border-t border-border py-8">
-        <div className="container mx-auto px-4 text-center">
+        <div className="container mx-auto px-4 text-center space-y-4">
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="mb-4"
+            >
+              <a 
+                href="https://www.isquareit.edu.in/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                Visit Our Official Website
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground">
             © 2025 iSquareIT International Institute of Information Technology. All rights reserved.
           </p>

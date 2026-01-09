@@ -1,4 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 import logo from "@/assets/isquareit-logo.png";
 
 const Navbar = () => {
@@ -42,6 +44,24 @@ const Navbar = () => {
             >
               Faculty Portal
             </Link>
+            
+            {/* College Website Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="ml-2"
+            >
+              <a 
+                href="https://www.isquareit.edu.in/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                Visit College Website
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
           </div>
         </div>
       </div>
