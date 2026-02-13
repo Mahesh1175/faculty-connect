@@ -11,6 +11,7 @@ import ChatPage from "./pages/ChatPage";
 import NotFound from "./pages/NotFound";
 import { initializeData } from "./utils/localStorage";
 import { useEffect } from "react";
+import GuardDashboard from "./pages/GuardDashboard";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/visitor-form" element={<VisitorFormPage />} />
             <Route path="/faculty-dashboard" element={<FacultyDashboardPage />} />
+            <Route path="/guard" element={<GuardDashboard />} />
             <Route path="/chat/:requestId" element={<ChatPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

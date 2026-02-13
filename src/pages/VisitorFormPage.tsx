@@ -10,21 +10,23 @@ import Navbar from "@/components/Navbar";
 import { addVisitorRequest, getFacultyByDept } from "@/utils/localStorage";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
+import axios from "axios";
 
 const VisitorFormPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     visitorName: "",
     mobile: "",
+    email: "",
     dept: "",
     facultyName: "",
     reason: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.visitorName || !formData.mobile || !formData.dept || !formData.facultyName || !formData.reason) {
+
+    if (!formData.visitorName || !formData.mobile || !formData.email || !formData.dept || !formData.facultyName || !formData.reason) {
       toast.error("Please fill all fields");
       return;
     }
@@ -34,24 +36,43 @@ const VisitorFormPage = () => {
       return;
     }
 
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     addVisitorRequest({
       visitorName: formData.visitorName,
       mobile: formData.mobile,
+      email: formData.email,
       dept: formData.dept,
       facultyName: formData.facultyName,
       reason: formData.reason,
       status: 'pending',
     });
 
+
+
+try {
+    const res = await axios.post("/api/visitors", formData);
+    console.log(res.data);
+  } catch (err) {
+    console.error(err);
+  }
+    
+    console.log("visitor data->", formData)
     toast.success("Visit request submitted successfully!");
     setFormData({
       visitorName: "",
       mobile: "",
+      email: "",
       dept: "",
       facultyName: "",
       reason: "",
     });
-    
+
     setTimeout(() => navigate("/"), 1500);
   };
 
@@ -60,7 +81,7 @@ const VisitorFormPage = () => {
   return (
     <div className="min-h-screen bg-muted/30">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
@@ -100,6 +121,20 @@ const VisitorFormPage = () => {
                   maxLength={10}
                   value={formData.mobile}
                   onChange={(e) => setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '') })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   required
                 />
               </div>

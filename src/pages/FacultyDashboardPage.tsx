@@ -7,9 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import RequestCard from "@/components/RequestCard";
-import { getFaculty, getRequestsByFaculty, updateRequestStatus, VisitorRequest } from "@/utils/localStorage";
+import { getFaculty } from "@/utils/localStorage";
+import { VisitorRequest } from "@/types/visitor";
 import toast from "react-hot-toast";
 import { Users, CheckCircle2, Clock, XCircle } from "lucide-react";
+import axios from "axios";
+import api from "@/utils/api";
 
 // Main Dashboard Component (your existing component)
 const FacultyDashboard = ({ selectedFaculty }: { selectedFaculty: string }) => {
@@ -19,22 +22,30 @@ const FacultyDashboard = ({ selectedFaculty }: { selectedFaculty: string }) => {
     loadRequests();
   }, [selectedFaculty]);
 
-  const loadRequests = () => {
-    const facultyRequests = getRequestsByFaculty(selectedFaculty);
-    setRequests(facultyRequests);
-  };
+const loadRequests = async () => {
+  try {
+    const res = await api.put(
+      `/api/visitors/${encodeURIComponent(selectedFaculty)}`
+    );
 
-  const handleStatusChange = (requestId: string, status: VisitorRequest['status']) => {
-    updateRequestStatus(requestId, status);
-    loadRequests();
-    
-    const statusMessages = {
-      approved: "Request approved successfully!",
-      hold: "Request put on hold",
-      declined: "Request declined",
-    };
-    toast.success(statusMessages[status]);
-  };
+    setRequests(res.data);
+    console.log("res data-from faculty->", res.data);
+  } catch (err) {
+    toast.error("Failed to load requests");
+    console.error(err);
+  }
+};
+
+
+const handleStatusChange = async (_id: string, status: VisitorRequest["status"]) => {
+  const resStatus = await axios.put(
+    `/api/visitors/${_id}`,
+    { status }
+  );
+
+  console.log("resStatus", resStatus);
+  loadRequests();
+};
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const approvedRequests = requests.filter(r => r.status === 'approved');
@@ -128,7 +139,7 @@ const FacultyDashboard = ({ selectedFaculty }: { selectedFaculty: string }) => {
                   <div className="grid gap-4">
                     {pendingRequests.map((request) => (
                       <RequestCard
-                        key={request.id}
+                        key={request._id}
                         request={request}
                         onStatusChange={handleStatusChange}
                       />
@@ -148,7 +159,7 @@ const FacultyDashboard = ({ selectedFaculty }: { selectedFaculty: string }) => {
                   <div className="grid gap-4">
                     {approvedRequests.map((request) => (
                       <RequestCard
-                        key={request.id}
+                        key={request._id}
                         request={request}
                         onStatusChange={handleStatusChange}
                       />
@@ -168,7 +179,7 @@ const FacultyDashboard = ({ selectedFaculty }: { selectedFaculty: string }) => {
                   <div className="grid gap-4">
                     {otherRequests.map((request) => (
                       <RequestCard
-                        key={request.id}
+                        key={request._id}
                         request={request}
                         onStatusChange={handleStatusChange}
                       />

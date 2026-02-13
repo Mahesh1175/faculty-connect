@@ -10,6 +10,7 @@ export interface VisitorRequest {
   id: string;
   visitorName: string;
   mobile: string;
+  email:string;
   facultyName: string;
   dept: string;
   reason: string;
@@ -38,6 +39,7 @@ const dummyFaculty: Faculty[] = [
   { id: 4, name: "Dr. Shital Wadgavane", dept: "CS" },
   { id: 5, name: "Prof. V. Jadhav", dept: "ENTC" },
   { id: 6, name: "Dr. N. Shinde", dept: "ENTC" },
+  { id: 7, name: "Prof. Mahesh Galange", dept: "IT" },
 ];
 
 export const initializeData = () => {

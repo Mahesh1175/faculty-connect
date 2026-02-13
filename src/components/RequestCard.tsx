@@ -2,32 +2,36 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Phone, User, FileText, CheckCircle2, XCircle, Pause } from "lucide-react";
-import { VisitorRequest } from "@/utils/localStorage";
+import { VisitorRequest } from "@/types/visitor"; // ✅ fixed import
 import { useNavigate } from "react-router-dom";
 
 interface RequestCardProps {
   request: VisitorRequest;
-  onStatusChange: (id: string, status: VisitorRequest['status']) => void;
+  onStatusChange: (id: string, status: VisitorRequest["status"]) => void;
 }
 
 const RequestCard = ({ request, onStatusChange }: RequestCardProps) => {
   const navigate = useNavigate();
-  
-  const getStatusColor = (status: VisitorRequest['status']) => {
+
+  const getStatusColor = (status: VisitorRequest["status"]) => {
     switch (status) {
-      case 'approved': return 'bg-success text-success-foreground';
-      case 'declined': return 'bg-destructive text-destructive-foreground';
-      case 'hold': return 'bg-warning text-warning-foreground';
-      default: return 'bg-muted text-muted-foreground';
+      case "approved":
+        return "bg-success text-success-foreground";
+      case "declined":
+        return "bg-destructive text-destructive-foreground";
+      case "hold":
+        return "bg-warning text-warning-foreground";
+      default:
+        return "bg-muted text-muted-foreground";
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -44,12 +48,13 @@ const RequestCard = ({ request, onStatusChange }: RequestCardProps) => {
           </Badge>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-3">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Phone className="h-4 w-4" />
           <span>{request.mobile}</span>
         </div>
-        
+
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Clock className="h-4 w-4" />
           <span>{formatDate(request.createdAt)}</span>
@@ -60,31 +65,33 @@ const RequestCard = ({ request, onStatusChange }: RequestCardProps) => {
           <p className="text-muted-foreground">{request.reason}</p>
         </div>
 
-        {request.status === 'pending' && (
+        {request.status === "pending" && (
           <div className="flex gap-2 pt-2">
             <Button
               size="sm"
               variant="default"
               className="flex-1 bg-success hover:bg-success/90"
-              onClick={() => onStatusChange(request.id, 'approved')}
+              onClick={() => onStatusChange(request._id, "approved")} // ✅ fixed
             >
               <CheckCircle2 className="h-4 w-4 mr-1" />
               Approve
             </Button>
+
             <Button
               size="sm"
               variant="outline"
               className="flex-1"
-              onClick={() => onStatusChange(request.id, 'hold')}
+              onClick={() => onStatusChange(request._id, "hold")} // ✅ fixed
             >
               <Pause className="h-4 w-4 mr-1" />
               Hold
             </Button>
+
             <Button
               size="sm"
               variant="destructive"
               className="flex-1"
-              onClick={() => onStatusChange(request.id, 'declined')}
+              onClick={() => onStatusChange(request._id, "declined")} // ✅ fixed
             >
               <XCircle className="h-4 w-4 mr-1" />
               Decline
@@ -92,11 +99,11 @@ const RequestCard = ({ request, onStatusChange }: RequestCardProps) => {
           </div>
         )}
 
-        {request.status === 'approved' && (
+        {request.status === "approved" && (
           <Button
             size="sm"
             className="w-full mt-2"
-            onClick={() => navigate(`/chat/${request.id}`)}
+            onClick={() => navigate(`/chat/${request._id}`)} // ✅ fixed
           >
             Open Chat
           </Button>
