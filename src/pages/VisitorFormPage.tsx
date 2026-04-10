@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
-import { addVisitorRequest, getFacultyByDept } from "@/utils/localStorage";
+import { getFacultyByDept } from "@/utils/localStorage";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
-import axios from "axios";
+
+import api from "@/utils/api";
 
 const VisitorFormPage = () => {
   const navigate = useNavigate();
@@ -23,47 +24,19 @@ const VisitorFormPage = () => {
     reason: "",
   });
 
-  const handleSubmit = async(e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!formData.visitorName || !formData.mobile || !formData.email || !formData.dept || !formData.facultyName || !formData.reason) {
-      toast.error("Please fill all fields");
-      return;
-    }
-
-    if (formData.mobile.length !== 10) {
-      toast.error("Mobile number must be 10 digits");
-      return;
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    addVisitorRequest({
-      visitorName: formData.visitorName,
-      mobile: formData.mobile,
-      email: formData.email,
-      dept: formData.dept,
-      facultyName: formData.facultyName,
-      reason: formData.reason,
-      status: 'pending',
-    });
-
-
-
-try {
-    const res = await axios.post("/api/visitors", formData);
-    console.log(res.data);
-  } catch (err) {
-    console.error(err);
+  if (!formData.visitorName || !formData.mobile || !formData.email || !formData.dept || !formData.facultyName || !formData.reason) {
+    toast.error("Please fill all fields");
+    return;
   }
-    
-    console.log("visitor data->", formData)
+
+  try {
+    await api.post("/api/visitors", formData);
+
     toast.success("Visit request submitted successfully!");
+
     setFormData({
       visitorName: "",
       mobile: "",
@@ -74,7 +47,13 @@ try {
     });
 
     setTimeout(() => navigate("/"), 1500);
-  };
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Server error. Try again.");
+  }
+};
+
 
   const facultyList = formData.dept ? getFacultyByDept(formData.dept) : [];
 

@@ -6,6 +6,7 @@ import { saveAs } from "file-saver";
 import toast from "react-hot-toast";
 import { ScanLine, Download, RefreshCw, LogOut } from "lucide-react";
 import GuardLogin from "@/components/GuardLogin";
+import api from "@/utils/api";
 
 const GuardDashboard = () => {
   const [logs, setLogs] = useState<any[]>([]);
@@ -30,7 +31,7 @@ const GuardDashboard = () => {
   scanner.render(
     async (text) => {
       try {
-        const res = await axios.post(
+        const res = await api.post(
           "/api/visitors/verify",
           { id: text }
         );

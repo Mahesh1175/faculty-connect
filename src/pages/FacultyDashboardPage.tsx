@@ -24,7 +24,7 @@ const FacultyDashboard = ({ selectedFaculty }: { selectedFaculty: string }) => {
 
 const loadRequests = async () => {
   try {
-    const res = await api.put(
+    const res = await api.get(
       `/api/visitors/${encodeURIComponent(selectedFaculty)}`
     );
 
@@ -38,7 +38,7 @@ const loadRequests = async () => {
 
 
 const handleStatusChange = async (_id: string, status: VisitorRequest["status"]) => {
-  const resStatus = await axios.put(
+  const resStatus = await api.put(
     `/api/visitors/${_id}`,
     { status }
   );
