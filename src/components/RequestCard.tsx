@@ -103,7 +103,7 @@ const RequestCard = ({ request, onStatusChange }: RequestCardProps) => {
           <Button
             size="sm"
             className="w-full mt-2"
-            onClick={() => navigate(`/chat/${request._id}`)} // ✅ fixed
+            onClick={() => navigate(`/chat/${request._id}?type=faculty`)} // ✅ fixed
           >
             Open Chat
           </Button>

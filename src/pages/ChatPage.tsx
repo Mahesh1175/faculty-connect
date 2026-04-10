@@ -1,42 +1,84 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Navbar from "@/components/Navbar";
-import { getChat, getVisitorRequests, addChatMessage, ChatMessage } from "@/utils/localStorage";
+import { getVisitorRequests, ChatMessage } from "@/utils/localStorage";
 import { Send, ArrowLeft, User } from "lucide-react";
 import toast from "react-hot-toast";
+import { io, Socket } from "socket.io-client";
 
 const ChatPage = () => {
   const { requestId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const userType = searchParams.get('type');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [chatInfo, setChatInfo] = useState<{ facultyName: string; visitorName: string } | null>(null);
   const [currentUser, setCurrentUser] = useState<string>("");
+  const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!requestId) return;
 
-    const chat = getChat(requestId);
-    const request = getVisitorRequests().find(r => r.id === requestId);
+    // Fetch visitor request metadata
+    fetch(`http://localhost:5000/api/visitors/request/${requestId}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Request not found");
+        return res.json();
+      })
+      .then(request => {
+        if (!request || request.status !== 'approved') {
+          toast.error("Chat not available");
+          navigate("/");
+          return;
+        }
 
-    if (!chat || !request || request.status !== 'approved') {
-      toast.error("Chat not available");
-      navigate("/");
-      return;
-    }
+        setChatInfo({ facultyName: request.facultyName, visitorName: request.visitorName });
+        
+        if (!currentUser) {
+          setCurrentUser(userType === 'faculty' ? request.facultyName : request.visitorName);
+        }
 
-    setChatInfo({ facultyName: chat.facultyName, visitorName: chat.visitorName });
-    setMessages(chat.messages);
-    // For demo, let user choose their role
-    if (!currentUser) {
-      setCurrentUser(chat.visitorName); // Default to visitor
-    }
-  }, [requestId, navigate]);
+        // Fetch chat history from MongoDB
+        return fetch(`http://localhost:5000/api/chats/${requestId}`);
+      })
+      .then(res => res ? res.json() : null)
+      .then(data => {
+        if (data && data.messages) {
+          setMessages(data.messages);
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching chat data:", err);
+        toast.error("Failed to load chat details.");
+        navigate("/");
+      });
+  }, [requestId, navigate, currentUser, userType]);
+
+  useEffect(() => {
+    if (!requestId) return;
+
+    const newSocket = io("http://localhost:5000");
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to socket server");
+      newSocket.emit("join_room", requestId);
+    });
+
+    newSocket.on("receive_message", (message: ChatMessage) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [requestId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,21 +89,21 @@ const ChatPage = () => {
     
     if (!newMessage.trim() || !requestId) return;
 
-    addChatMessage(requestId, currentUser, newMessage.trim());
+    const messageText = newMessage.trim();
     
-    // Reload messages
-    const chat = getChat(requestId);
-    if (chat) {
-      setMessages(chat.messages);
+    const messageObj: ChatMessage = {
+      sender: currentUser,
+      text: messageText,
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    if (socket) {
+      socket.emit("send_message", { ...messageObj, roomId: requestId });
     }
     
+    // Add instantly to UI
+    setMessages(prev => [...prev, messageObj]);
     setNewMessage("");
-  };
-
-  const switchUser = () => {
-    if (!chatInfo) return;
-    setCurrentUser(currentUser === chatInfo.visitorName ? chatInfo.facultyName : chatInfo.visitorName);
-    toast.success(`Switched to ${currentUser === chatInfo.visitorName ? chatInfo.facultyName : chatInfo.visitorName}`);
   };
 
   if (!chatInfo) return null;
@@ -98,10 +140,6 @@ const ChatPage = () => {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={switchUser}>
-                <User className="h-4 w-4 mr-2" />
-                Switch User
-              </Button>
             </div>
           </CardHeader>
 
