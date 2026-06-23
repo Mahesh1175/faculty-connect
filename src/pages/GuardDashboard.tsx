@@ -17,6 +17,22 @@ const GuardDashboard = () => {
   const [scanning, setScanning] = useState(true);
 
   /* ==============================
+     Fetch Logs
+  ============================== */
+  useEffect(() => {
+    if (!isAuth) return;
+    const fetchLogs = async () => {
+      try {
+        const res = await api.get("/api/visitors/guard/logs");
+        setLogs(res.data);
+      } catch (err) {
+        console.error("Failed to fetch logs", err);
+      }
+    };
+    fetchLogs();
+  }, [isAuth]);
+
+  /* ==============================
      Scanner Logic
   ============================== */
  useEffect(() => {
@@ -37,13 +53,18 @@ const GuardDashboard = () => {
         );
 
         if (res.data.valid) {
-          setLogs((prev) => [res.data.visitor, ...prev]);
-          toast.success("Entry Allowed ✅");
+          if (res.data.type === "checkout") {
+            setLogs((prev) => prev.map(log => log._id === res.data.visitor._id ? res.data.visitor : log));
+            toast.success("Checkout Successful 🏃");
+          } else {
+            setLogs((prev) => [res.data.visitor, ...prev]);
+            toast.success("Entry Allowed ✅");
+          }
 
           setScanning(false);
           scanner.clear();
         } else {
-          toast.error("Invalid QR ❌");
+          toast.error(res.data.message || "Invalid QR ❌");
         }
       } catch {
         toast.error("Scan failed ❌");
@@ -79,6 +100,23 @@ const GuardDashboard = () => {
      Show login first
   ============================== */
   if (!isAuth) return <GuardLogin onLogin={() => setIsAuth(true)} />;
+
+  /* ==============================
+     Helper: Duration
+  ============================== */
+  const getDuration = (inTime: string, outTime?: string) => {
+    if (!outTime) return "In Campus ⏳";
+    
+    const diff = new Date(outTime).getTime() - new Date(inTime).getTime();
+    const minutes = Math.floor(diff / 1000 / 60);
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${mins}m`;
+    }
+    return `${mins}m`;
+  };
 
   /* ==============================
      UI
@@ -131,10 +169,11 @@ const GuardDashboard = () => {
           <thead className="bg-gray-100 text-left">
             <tr>
               <th className="p-2">Visitor</th>
-              <th className="p-2">Mobile</th>
               <th className="p-2">Faculty</th>
-              <th className="p-2 hidden md:table-cell">Reason</th>
-              <th className="p-2">Time</th>
+              <th className="p-2 hidden md:table-cell">Mobile</th>
+              <th className="p-2">In Time</th>
+              <th className="p-2">Out Time</th>
+              <th className="p-2">Duration</th>
             </tr>
           </thead>
 
@@ -142,11 +181,16 @@ const GuardDashboard = () => {
             {logs.map((v) => (
               <tr key={v._id} className="border-t hover:bg-gray-50">
                 <td className="p-2">{v.visitorName}</td>
-                <td className="p-2">{v.mobile}</td>
                 <td className="p-2">{v.facultyName}</td>
-                <td className="p-2 hidden md:table-cell">{v.reason}</td>
-                <td className="p-2">
-                  {new Date(v.checkedInAt).toLocaleTimeString()}
+                <td className="p-2 hidden md:table-cell">{v.mobile}</td>
+                <td className="p-2 text-green-600 font-medium">
+                  {v.checkedInAt ? new Date(v.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
+                </td>
+                <td className="p-2 text-rose-600 font-medium">
+                  {v.checkedOutAt ? new Date(v.checkedOutAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
+                </td>
+                <td className="p-2 font-medium text-blue-600">
+                  {v.checkedInAt ? getDuration(v.checkedInAt, v.checkedOutAt) : '-'}
                 </td>
               </tr>
             ))}

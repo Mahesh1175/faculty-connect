@@ -26,7 +26,7 @@ const ChatPage = () => {
     if (!requestId) return;
 
     // Fetch visitor request metadata
-    fetch(`http://localhost:5000/api/visitors/request/${requestId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/visitors/request/${requestId}`)
       .then(res => {
         if (!res.ok) throw new Error("Request not found");
         return res.json();
@@ -39,13 +39,13 @@ const ChatPage = () => {
         }
 
         setChatInfo({ facultyName: request.facultyName, visitorName: request.visitorName });
-        
+
         if (!currentUser) {
           setCurrentUser(userType === 'faculty' ? request.facultyName : request.visitorName);
         }
 
         // Fetch chat history from MongoDB
-        return fetch(`http://localhost:5000/api/chats/${requestId}`);
+        return fetch(`${import.meta.env.VITE_API_URL}/api/chats/${requestId}`);
       })
       .then(res => res ? res.json() : null)
       .then(data => {
@@ -63,7 +63,7 @@ const ChatPage = () => {
   useEffect(() => {
     if (!requestId) return;
 
-    const newSocket = io("http://localhost:5000");
+    const newSocket = io(`${import.meta.env.VITE_API_URL}`);
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
@@ -86,11 +86,11 @@ const ChatPage = () => {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newMessage.trim() || !requestId) return;
 
     const messageText = newMessage.trim();
-    
+
     const messageObj: ChatMessage = {
       sender: currentUser,
       text: messageText,
@@ -100,7 +100,7 @@ const ChatPage = () => {
     if (socket) {
       socket.emit("send_message", { ...messageObj, roomId: requestId });
     }
-    
+
     // Add instantly to UI
     setMessages(prev => [...prev, messageObj]);
     setNewMessage("");
@@ -113,7 +113,7 @@ const ChatPage = () => {
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-4 flex-1 flex flex-col max-w-4xl">
         <Button
           variant="ghost"
@@ -160,11 +160,10 @@ const ChatPage = () => {
                       className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                          isCurrentUser
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        }`}
+                        className={`max-w-[70%] rounded-lg px-4 py-2 ${isCurrentUser
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                          }`}
                       >
                         <p className="text-sm font-medium mb-1">{message.sender}</p>
                         <p className="break-words">{message.text}</p>
