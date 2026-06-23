@@ -44,7 +44,7 @@ const App = () => {
         {/* AI Assistance Floating Button */}
         <button
           onClick={handleAIAssistanceClick}
-          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-50 flex items-center gap-2"
+          className="fixed bottom-20 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-50 flex items-center gap-2"
           title="AI Assistance"
         >
           <svg

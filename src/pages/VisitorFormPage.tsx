@@ -9,12 +9,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Navbar from "@/components/Navbar";
 import { getFacultyByDept } from "@/utils/localStorage";
 import toast from "react-hot-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+
 
 import api from "@/utils/api";
 
 const VisitorFormPage = () => {
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     visitorName: "",
     mobile: "",
@@ -24,36 +28,75 @@ const VisitorFormPage = () => {
     reason: "",
   });
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-  if (!formData.visitorName || !formData.mobile || !formData.email || !formData.dept || !formData.facultyName || !formData.reason) {
-    toast.error("Please fill all fields");
-    return;
-  }
+  //   if (!formData.visitorName || !formData.mobile || !formData.email || !formData.dept || !formData.facultyName || !formData.reason) {
+  //     toast.error("Please fill all fields");
+  //     return;
+  //   }
 
-  try {
-    await api.post("/api/visitors", formData);
+  //   try {
+  //     await api.post("/api/visitors", formData);
 
-    toast.success("Visit request submitted successfully!");
+  //     toast.success("Visit request submitted successfully!");
 
-    setFormData({
-      visitorName: "",
-      mobile: "",
-      email: "",
-      dept: "",
-      facultyName: "",
-      reason: "",
-    });
+  //     setFormData({
+  //       visitorName: "",
+  //       mobile: "",
+  //       email: "",
+  //       dept: "",
+  //       facultyName: "",
+  //       reason: "",
+  //     });
 
-    setTimeout(() => navigate("/"), 1500);
+  //     setTimeout(() => navigate("/"), 1500);
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Server error. Try again.");
-  }
-};
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Server error. Try again.");
+  //   }
+  // };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (
+      !formData.visitorName ||
+      !formData.mobile ||
+      !formData.email ||
+      !formData.dept ||
+      !formData.facultyName ||
+      !formData.reason
+    ) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await api.post("/api/visitors", formData);
+
+      toast.success("Visit request submitted successfully!");
+
+      setFormData({
+        visitorName: "",
+        mobile: "",
+        email: "",
+        dept: "",
+        facultyName: "",
+        reason: "",
+      });
+
+      setTimeout(() => navigate("/"), 1500);
+    } catch (err) {
+      console.error(err);
+      toast.error("Server error. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const facultyList = formData.dept ? getFacultyByDept(formData.dept) : [];
 
@@ -167,8 +210,20 @@ const handleSubmit = async (e: React.FormEvent) => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Submit Request
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending Request...
+                  </>
+                ) : (
+                  "Submit Request"
+                )}
               </Button>
             </form>
           </CardContent>

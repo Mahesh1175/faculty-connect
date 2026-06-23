@@ -197,51 +197,28 @@ const handleStatusChange = async (_id: string, status: VisitorRequest["status"])
 const FacultyDashboardPage = () => {
   const [selectedFaculty, setSelectedFaculty] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [step, setStep] = useState(1); // 1: name, 2: phone, 3: otp
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    otp: ""
-  });
+  const [password, setPassword] = useState("");
+
   const facultyList = getFaculty();
 
   const handleFacultySelect = (faculty: string) => {
     setSelectedFaculty(faculty);
-    setFormData(prev => ({ ...prev, name: faculty }));
-    setStep(2); // Go to phone number step
   };
 
-  const handleNameSubmit = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name.trim()) {
-      setStep(2);
-    } else {
-      toast.error("Please enter your name");
-    }
-  };
 
-  const handlePhoneSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.phone === "9999999999") {
-      setStep(3);
-      toast.success("OTP sent to your phone");
-    } else {
-      toast.error("Invalid phone number");
-    }
-  };
-
-  const handleOTPSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.otp === "123456") {
+    if (password === "faculty@24") {
       setIsAuthenticated(true);
-      toast.success("Authentication successful!");
+      toast.success("Login successful!");
     } else {
-      toast.error("Invalid OTP");
+      toast.error("Invalid password");
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleBack = () => {
+    setSelectedFaculty("");
+    setPassword("");
   };
 
   if (isAuthenticated && selectedFaculty) {
@@ -249,152 +226,94 @@ const FacultyDashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">
-            {!selectedFaculty ? "Faculty Selection" : "Faculty Authentication"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!selectedFaculty && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="faculty-select">Select Faculty Profile</Label>
-                <Select value={selectedFaculty} onValueChange={handleFacultySelect}>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+
+      <div className="container mx-auto px-4 py-8 max-w-md">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {!selectedFaculty
+                ? "Faculty Selection"
+                : "Faculty Authentication"}
+            </CardTitle>
+
+            <CardDescription>
+              {!selectedFaculty
+                ? "Select Faculty Profile"
+                : `Login as ${selectedFaculty}`}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            {!selectedFaculty ? (
+              <div className="space-y-4">
+                <Label>Select Faculty</Label>
+
+                <Select onValueChange={handleFacultySelect}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose your faculty profile" />
+                    <SelectValue placeholder="Choose Faculty" />
                   </SelectTrigger>
+
                   <SelectContent>
                     {facultyList.map((faculty) => (
-                      <SelectItem key={faculty.id} value={faculty.name}>
+                      <SelectItem
+                        key={faculty.name}
+                        value={faculty.name}
+                      >
                         {faculty.name} ({faculty.dept})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          )}
+            ) : (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Faculty: <strong>{selectedFaculty}</strong>
+                  </p>
 
-          {selectedFaculty && step === 1 && (
-            <form onSubmit={handleNameSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Faculty Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedFaculty("");
-                    setStep(1);
-                    setFormData({ name: "", phone: "", otp: "" });
-                  }}
-                  className="flex-1"
-                >
-                  Back
-                </Button>
-                <Button type="submit" className="flex-1">
-                  Continue
-                </Button>
-              </div>
-            </form>
-          )}
+                  <Label htmlFor="password">
+                    Password
+                  </Label>
 
-          {selectedFaculty && step === 2 && (
-            <form onSubmit={handlePhoneSubmit} className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Authenticating: <strong>{selectedFaculty}</strong>
-                </p>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="Enter phone number (9999999999)"
-                  required
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Use: 9999999999
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedFaculty("");
-                    setStep(1);
-                    setFormData({ name: "", phone: "", otp: "" });
-                  }}
-                  className="flex-1"
-                >
-                  Back
-                </Button>
-                <Button type="submit" className="flex-1">
-                  Send OTP
-                </Button>
-              </div>
-            </form>
-          )}
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
 
-          {selectedFaculty && step === 3 && (
-            <form onSubmit={handleOTPSubmit} className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Authenticating: <strong>{selectedFaculty}</strong>
-                </p>
-                <Label htmlFor="otp">Enter OTP</Label>
-                <Input
-                  id="otp"
-                  type="text"
-                  value={formData.otp}
-                  onChange={(e) => handleInputChange("otp", e.target.value)}
-                  placeholder="Enter OTP (123456)"
-                  maxLength={6}
-                  required
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Use: 123456
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                  className="flex-1"
-                >
-                  Back
-                </Button>
-                <Button type="submit" className="flex-1">
-                  Verify
-                </Button>
-              </div>
-            </form>
-          )}
+                  {/* <p className="text-sm text-muted-foreground mt-2">
+                    Demo Password: faculty@24
+                  </p> */}
+                </div>
 
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Demo Credentials:</h4>
-            <ul className="text-xs text-muted-foreground space-y-1">
-              <li>• Name: Any name</li>
-              <li>• Phone: 9999999999</li>
-              <li>• OTP: 123456</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleBack}
+                    className="flex-1"
+                  >
+                    Back
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    className="flex-1"
+                  >
+                    Login
+                  </Button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

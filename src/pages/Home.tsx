@@ -46,25 +46,26 @@ const Home = () => {
               </Button>
             </div>
             
-            <div className="flex gap-4 justify-center pt-4">
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={() => navigate("/visitor-form")}
-                className="font-semibold"
-              >
-                Request Faculty Visit
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => navigate("/faculty-dashboard")}
-                className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30"
-              >
-                Faculty Portal
-              </Button>
-            </div>
+           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+  <Button
+    size="lg"
+    variant="secondary"
+    onClick={() => navigate("/visitor-form")}
+    className="font-semibold w-full sm:w-auto"
+  >
+    Request Faculty Visit
+    <ArrowRight className="ml-2 h-5 w-5" />
+  </Button>
+
+  <Button
+    size="lg"
+    variant="outline"
+    onClick={() => navigate("/faculty-dashboard")}
+    className="w-full sm:w-auto bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30"
+  >
+    Faculty Portal
+  </Button>
+</div>
           </div>
         </div>
       </section>
