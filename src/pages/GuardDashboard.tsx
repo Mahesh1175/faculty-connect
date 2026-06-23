@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -9,10 +9,14 @@ import GuardLogin from "@/components/GuardLogin";
 import api from "@/utils/api";
 
 const GuardDashboard = () => {
+  const scanLock = useRef(false);
+
   const [logs, setLogs] = useState<any[]>([]);
   const [isAuth, setIsAuth] = useState(
     localStorage.getItem("guardAuth") === "true"
   );
+
+// const [processing, setProcessing] = useState(false);
 
   const [scanning, setScanning] = useState(true);
 
@@ -44,39 +48,72 @@ const GuardDashboard = () => {
     false
   );
 
-  scanner.render(
-    async (text) => {
-      try {
-        const res = await api.post(
-          "/api/visitors/verify",
-          { id: text }
-        );
+scanner.render(
+  async (text) => {
+    // Prevent duplicate scans
+    if (scanLock.current) return;
 
-        if (res.data.valid) {
-          if (res.data.type === "checkout") {
-            setLogs((prev) => prev.map(log => log._id === res.data.visitor._id ? res.data.visitor : log));
-            toast.success("Checkout Successful 🏃");
-          } else {
-            setLogs((prev) => [res.data.visitor, ...prev]);
-            toast.success("Entry Allowed ✅");
-          }
+    scanLock.current = true;
 
-          setScanning(false);
-          scanner.clear();
+    try {
+      const res = await api.post("/api/visitors/verify", {
+        id: text,
+      });
+
+      if (res.data.valid) {
+        if (res.data.type === "checkout") {
+          setLogs((prev) =>
+            prev.map((log) =>
+              log._id === res.data.visitor._id
+                ? res.data.visitor
+                : log
+            )
+          );
+
+          toast.success("Checkout Successful 🏃");
         } else {
-          toast.error(res.data.message || "Invalid QR ❌");
+          setLogs((prev) => [
+            res.data.visitor,
+            ...prev,
+          ]);
+
+          toast.success("Entry Allowed ✅");
         }
-      } catch {
-        toast.error("Scan failed ❌");
+
+        // Stop scanner after successful scan
+        setScanning(false);
+
+        try {
+          await scanner.clear();
+        } catch (err) {
+          console.log("Scanner already cleared");
+        }
+      } else {
+        toast.error(res.data.message || "Invalid QR ❌");
+
+        // Allow next scan if invalid
+        scanLock.current = false;
       }
-    },
-    () => {}
-  );
+    } catch (err) {
+      toast.error("Scan failed ❌");
+
+      // Allow next scan on error
+      scanLock.current = false;
+    }
+  },
+  () => {}
+);
 
   // ✅ CLEANUP FIX
   return () => {
-    void scanner.clear(); // ⭐ correct
-  };
+  scanLock.current = false;
+
+  scanner
+    .clear()
+    .catch(() =>
+      console.log("Scanner already cleared")
+    );
+};
 }, [isAuth, scanning]);
 
 
@@ -131,7 +168,10 @@ const GuardDashboard = () => {
 
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => setScanning(true)}
+           onClick={() => {
+  scanLock.current = false;
+  setScanning(true);
+}}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
           >
             <RefreshCw size={18} /> Scan Again
